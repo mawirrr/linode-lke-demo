@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: demo
-        image: ghcr.io/<GITHUB_USER>/<REPO>:${IMAGE_TAG}
+        image: ghcr.io/mawirrr/linode-lke-demo:latest
         ports:
         - containerPort: 3000
         env:
