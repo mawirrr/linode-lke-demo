@@ -19,5 +19,5 @@ spec:
         - containerPort: 3000
         env:
         - name: VERSION
-          value: "${IMAGE_TAG}"
+          value: IMAGE_TAG
 
