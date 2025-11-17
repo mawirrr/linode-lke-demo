@@ -69,4 +69,4 @@ jobs:
           kubectl set image deployment/demo-app demo=${IMAGE} --record || true
           kubectl apply -f k8s/service.yaml
           kubectl apply -f k8s/deployment.yaml
-          kubectl rollout status deployment/demo-app --timeout=2m
+          kubectl rollout status deployment/demo-app --timeout=5m
