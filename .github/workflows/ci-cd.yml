@@ -59,14 +59,17 @@ jobs:
       - name: Verify cluster access
         run: kubectl get nodes
 
-      - name: Replace image tag in k8s manifest and apply
+      - name: Replace image tag and apply manifest
         env:
           IMAGE: ${{ needs.build-and-push.outputs.image }}
+          SHA: ${{ github.sha }}
         run: |
-          # update the manifest with the new image tag (safe approach)
-          sed -i "s|ghcr.io/<GITHUB_USER>/<REPO>:${IMAGE_TAG}|${IMAGE}|g" k8s/deployment.yaml || true
-          # Alternatively patch the deployment directly:
-          kubectl set image deployment/demo-app demo=${IMAGE} --record || true
-          kubectl apply -f k8s/service.yaml
-          kubectl apply -f k8s/deployment.yaml
+          # Replace VERSION env variable in deployment
+          sed -i "s|\${IMAGE_TAG}|$SHA|g" ./k8s/deployment.yaml
+          
+          # Deploy updated manifests
+          kubectl apply -f ./k8s/service.yaml
+          kubectl apply -f ./k8s/deployment.yaml
+          
+          # Wait until rollout finishes
           kubectl rollout status deployment/demo-app --timeout=5m
