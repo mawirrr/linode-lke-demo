@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: demo-app
+  template:
+    metadata:
+      labels:
+        app: demo-app
+    spec:
+      containers:
+      - name: demo
+        image: ghcr.io/<GITHUB_USER>/<REPO>:${IMAGE_TAG}
+        ports:
+        - containerPort: 3000
+        env:
+        - name: VERSION
+          value: "${IMAGE_TAG}"
+
