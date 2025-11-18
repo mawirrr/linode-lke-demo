@@ -56,16 +56,20 @@ jobs:
           mkdir -p $HOME/.kube
           echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
+          
       - name: Verify cluster access
         run: kubectl get nodes
 
       - name: Replace image tag and apply manifest
         env:
           IMAGE: ${{ needs.build-and-push.outputs.image }}
-          SHA: ${{ github.sha }}
         run: |
-          # Replace VERSION env variable in deployment
-          sed -i "s|\${IMAGE_TAG}|$SHA|g" ./k8s/deployment.yaml
+          # Generate readable version for demo: vYYMMDD-HHMM
+          VERSION=$(date +"v%y%m%d-%H%M")
+          echo "Using version: $VERSION"
+
+          # Replace VERSION env value in deployment.yaml
+          sed -i "s|\${IMAGE_TAG}|$VERSION|g" ./k8s/deployment.yaml
           
           # Deploy updated manifests
           kubectl apply -f ./k8s/service.yaml
