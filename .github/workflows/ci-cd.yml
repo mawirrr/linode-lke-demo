@@ -98,53 +98,48 @@ jobs:
 
       - name: Notify Slack – Deployment Success
         if: success()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          APP_URL: "http://${EXTERNAL_IP}"
         run: |
-          APP_URL="http://$EXTERNAL_IP"
-          IMAGE_URL="https://github.com/${{ github.repository }}/packages"
-          ACTIONS_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+          echo "Sending Slack notification..."
       
-          payload=$(jq -n \
-            --arg service "demo-app" \
-            --arg version "${{ github.sha }}" \
-            --arg cluster "LKE Demo Cluster" \
-            --arg ip "$EXTERNAL_IP" \
-            --arg time "$TIMESTAMP" \
-            --arg appurl "$APP_URL" \
-            --arg imageurl "$IMAGE_URL" \
-            --arg actionsurl "$ACTIONS_URL" \
-            '
-            {
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "🚀 Deployment Success!"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    { "type": "mrkdwn", "text": "*Service:* \n`" + $service + "`" },
-                    { "type": "mrkdwn", "text": "*Version:* \n`" + $version + "`" },
-                    { "type": "mrkdwn", "text": "*Cluster:* \n`" + $cluster + "`" },
-                    { "type": "mrkdwn", "text": "*External IP:* \n`" + $ip + "`" },
-                    { "type": "mrkdwn", "text": "*Time:* \n`" + $time + "`" }
-                  ]
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    { "type": "button", "text": { "type": "plain_text", "text": "🔗 Open App" }, "url": $appurl },
-                    { "type": "button", "text": { "type": "plain_text", "text": "📦 Open Image" }, "url": $imageurl },
-                    { "type": "button", "text": { "type": "plain_text", "text": "📜 View Logs" }, "url": $actionsurl }
-                  ]
+          cat <<EOF > slack.json
+          {
+            "text": ":rocket: *Deployment Success!*",
+            "blocks": [
+              {
+                "type": "header",
+                "text": {
+                  "type": "plain_text",
+                  "text": ":rocket: Deployment Success!"
                 }
-              ]
-            }
-            ')
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Service:* linode-lke-demo"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Version:* ${VERSION}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*External IP:* ${EXTERNAL_IP}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*URL:* http://${EXTERNAL_IP}"
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
       
-          curl -X POST -H "Content-type: application/json" \
-            --data "$payload" \
-            ${{ secrets.SLACK_WEBHOOK_URL }}
+          curl -X POST -H "Content-Type: application/json" \
+               --data @slack.json \
+               "$SLACK_WEBHOOK_URL"
