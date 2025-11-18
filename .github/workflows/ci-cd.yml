@@ -96,31 +96,31 @@ jobs:
           echo "ERROR: External IP not assigned."
           exit 1
 
-      - name: Notify Slack - Deployment Success
+      - name: Notify Slack – Deployment Success
         if: success()
         run: |
           APP_URL="http://$EXTERNAL_IP"
           IMAGE_URL="https://github.com/${{ github.repository }}/packages"
           ACTIONS_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
-
-          payload=$( jq -n \
-            --arg title "🚀 Deployment Success!" \
+      
+          payload=$(jq -n \
             --arg service "demo-app" \
-            --arg version "${{ github.ref_name }}" \
+            --arg version "${{ github.sha }}" \
             --arg cluster "LKE Demo Cluster" \
             --arg ip "$EXTERNAL_IP" \
             --arg time "$TIMESTAMP" \
             --arg appurl "$APP_URL" \
             --arg imageurl "$IMAGE_URL" \
             --arg actionsurl "$ACTIONS_URL" \
-            '{
+            '
+            {
               "blocks": [
                 {
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": $title
+                    "text": "🚀 Deployment Success!"
                   }
                 },
                 {
@@ -136,26 +136,14 @@ jobs:
                 {
                   "type": "actions",
                   "elements": [
-                    {
-                      "type": "button",
-                      "text": { "type": "plain_text", "text": "🔗 Open App" },
-                      "url": $appurl
-                    },
-                    {
-                      "type": "button",
-                      "text": { "type": "plain_text", "text": "📦 Open Image" },
-                      "url": $imageurl
-                    },
-                    {
-                      "type": "button",
-                      "text": { "type": "plain_text", "text": "📜 View Logs" },
-                      "url": $actionsurl
-                    }
+                    { "type": "button", "text": { "type": "plain_text", "text": "🔗 Open App" }, "url": $appurl },
+                    { "type": "button", "text": { "type": "plain_text", "text": "📦 Open Image" }, "url": $imageurl },
+                    { "type": "button", "text": { "type": "plain_text", "text": "📜 View Logs" }, "url": $actionsurl }
                   ]
                 }
               ]
-            }'
-          )
+            }
+            ')
       
           curl -X POST -H "Content-type: application/json" \
             --data "$payload" \
