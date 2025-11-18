@@ -99,10 +99,64 @@ jobs:
       - name: Notify Slack - Deployment Success
         if: success()
         run: |
+          APP_URL="http://$EXTERNAL_IP"
+          IMAGE_URL="https://github.com/${{ github.repository }}/packages"
+          ACTIONS_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
           payload=$( jq -n \
-            --arg text "\uD83D\uDE80 Deployment to LKE Success! External IP: $EXTERNAL_IP" \
-            '{text: $text}' )
-          curl -X POST -H 'Content-type: application/json' \
+            --arg title "🚀 Deployment Success!" \
+            --arg service "demo-app" \
+            --arg version "${{ github.ref_name }}" \
+            --arg cluster "LKE Demo Cluster" \
+            --arg ip "$EXTERNAL_IP" \
+            --arg time "$TIMESTAMP" \
+            --arg appurl "$APP_URL" \
+            --arg imageurl "$IMAGE_URL" \
+            --arg actionsurl "$ACTIONS_URL" \
+            '{
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": $title
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    { "type": "mrkdwn", "text": "*Service:* \n`" + $service + "`" },
+                    { "type": "mrkdwn", "text": "*Version:* \n`" + $version + "`" },
+                    { "type": "mrkdwn", "text": "*Cluster:* \n`" + $cluster + "`" },
+                    { "type": "mrkdwn", "text": "*External IP:* \n`" + $ip + "`" },
+                    { "type": "mrkdwn", "text": "*Time:* \n`" + $time + "`" }
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": { "type": "plain_text", "text": "🔗 Open App" },
+                      "url": $appurl
+                    },
+                    {
+                      "type": "button",
+                      "text": { "type": "plain_text", "text": "📦 Open Image" },
+                      "url": $imageurl
+                    },
+                    {
+                      "type": "button",
+                      "text": { "type": "plain_text", "text": "📜 View Logs" },
+                      "url": $actionsurl
+                    }
+                  ]
+                }
+              ]
+            }'
+          )
+      
+          curl -X POST -H "Content-type: application/json" \
             --data "$payload" \
             ${{ secrets.SLACK_WEBHOOK_URL }}
-
