@@ -77,3 +77,21 @@ jobs:
           
           # Wait until rollout finishes
           kubectl rollout status deployment/demo-app --timeout=5m
+
+      - name: Get External IP
+        run: |
+          echo "Waiting for External IP..."
+          for i in {1..30}; do
+            EXTERNAL_IP=$(kubectl get svc demo-app -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            if [[ ! -z "$EXTERNAL_IP" ]]; then
+              echo "External IP: $EXTERNAL_IP"
+              echo "App URL: http://$EXTERNAL_IP"
+              exit 0
+            fi
+            echo "Still waiting..."
+            sleep 10
+          done
+          
+          echo "ERROR: External IP not assigned."
+          exit 1
+
