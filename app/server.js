@@ -5,7 +5,7 @@ const version = process.env.VERSION || 'v1';
 
 const server = http.createServer((req, res) => {
   res.writeHead(200, {'Content-Type':'text/plain'});
-  res.end(`Hello from LKE demo1 hari ini ${process.env.VERSION}\n`);
+  res.end(`Hello Peserta Event Partner Enablement - Akamai Cloud x CDT from LKE demo1 hari ini ${process.env.VERSION}\n`);
 });
 
 server.listen(port, () => console.log(`listening ${port}`));
