@@ -31,9 +31,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          # prefer using GITHUB_TOKEN; if organization restricts, set secret CR_PAT instead
           username: ${{ github.actor }}
-          password: ${{ secrets.CR_PAT }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push image
         uses: docker/build-push-action@v6
