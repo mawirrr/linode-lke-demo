@@ -1,5 +1,9 @@
 name: CI → Build → Deploy to LKE
 
+permissions:
+  contents: read
+  packages: write
+
 on:
   push:
     branches: [ "main" ]
